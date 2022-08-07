@@ -75,7 +75,7 @@ func new_shake() -> void:
 		rand_range(-shake_amp, shake_amp),
 		rand_range(-shake_amp, shake_amp)
 	)
-	var pending = shake_tween.tween_property(time_left_visual, "rect_position", shake_to, time_per_shake)
+	var pending = shake_tween.tween_property(time_left_visual, "rect_position:y", shake_to.y, time_per_shake)
 	pending.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 	shake_tween.play()
 	freq.start(time_per_shake)
@@ -83,6 +83,6 @@ func new_shake() -> void:
 func shake_complete() -> void:
 	is_shaking = false
 	var shake_tween = get_tree().create_tween()
-	var pending = shake_tween.tween_property(time_left_visual, "rect_position", initial_pos, time_per_shake)
+	var pending = shake_tween.tween_property(time_left_visual, "rect_position:y", initial_pos.y, time_per_shake)
 	pending.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 	shake_tween.play()
