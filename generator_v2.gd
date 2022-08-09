@@ -5,6 +5,7 @@ var room_template = preload("res://MapRoom.tscn")
 export var min_size := 5
 export var max_size := 15
 export var max_iterations := 100
+export var interconnectedness := .65
 
 var num_rooms : int
 var rooms := {}
@@ -26,6 +27,9 @@ func _ready() -> void:
 	generate()
 
 func generate() -> void:
+	for child in $Rooms.get_children():
+		child.queue_free()
+	
 	rooms.clear()
 	corridors.clear()
 	after_first_pass = false
@@ -33,8 +37,6 @@ func generate() -> void:
 	has_mind = true
 	place_rooms()
 	connect_rooms()
-	determine_steps()
-	organize_tree()
 	update()
 
 func place_rooms() -> void:
@@ -51,9 +53,6 @@ func place_rooms() -> void:
 	if rooms.size() < num_rooms:
 		after_first_pass = true
 		spawn_neighbors(entrance, Vector2.ZERO)
-	
-	$Label.text = "target: %d" % num_rooms
-	$Label2.text = "rooms: %d" % rooms.size()
 
 func spawn_neighbors(room, grid_position) -> void:
 	var neighbors_to_spawn : int
@@ -112,28 +111,57 @@ func determine_room() -> int:
 
 func connect_rooms() -> void:
 	var temp_corridors := {}
+	var unconnected_rooms = rooms.duplicate()
 	for room in rooms.keys():
 		var neighbors := [Vector2.UP, Vector2.RIGHT, Vector2.LEFT, Vector2.DOWN]
+		#the cascading indent from hell!!!!
+		#basically if the room exists in that direction, the corridor doesn't already exist, and it passes a rand check
+		#then add it to the list of corridors. also remove the room from a list of rooms that do not have a corridor yet
 		for neighbor in neighbors:
 			if rooms.has(room + neighbor):
 				if !temp_corridors.has([room, room + neighbor] && !temp_corridors.has([room + neighbor, room])):
-					temp_corridors[[room, room + neighbor]] = [rooms[room].position, rooms[room + neighbor].position]
+					if randf() < interconnectedness:
+						if unconnected_rooms.has(room):
+							unconnected_rooms.erase(room)
+						temp_corridors[[room, room + neighbor]] = [rooms[room].position, rooms[room + neighbor].position]
+	
+	determine_steps(temp_corridors, unconnected_rooms)
+
+func determine_steps(temp_corridors, unconnected_rooms) -> void:
+	var process_stack := [Vector2.ZERO]
+	var processed := []
+	while process_stack.size() > 0:
+		var next_room = process_stack.pop_front()
+		for corridor in temp_corridors.keys():
+			if corridor.has(next_room):
+				var remaining_room = corridor.duplicate()
+				remaining_room.erase(next_room)
+				var child = remaining_room[0]
+				if !processed.has(child):
+					rooms[child].add_tree_parent(rooms[next_room])
+					process_stack.append(child)
+		processed.append(next_room)
+	
+	processed.clear()
+	
+	while unconnected_rooms.size() > processed.size():
+		for unconnected in unconnected_rooms.keys():
+			var neighbors := [Vector2.UP, Vector2.RIGHT, Vector2.LEFT, Vector2.DOWN]
+			neighbors.shuffle()
+			for neighbor in neighbors:
+				if rooms.has(unconnected + neighbor) && \
+				(rooms[unconnected + neighbor].parents.size() > 0 || rooms[unconnected + neighbor].type == MapRoom.TYPE.ENTRANCE):
+					temp_corridors[[unconnected, unconnected + neighbor]] = [rooms[unconnected].position, rooms[unconnected + neighbor].position]
+					rooms[unconnected + neighbor].add_tree_child(rooms[unconnected])
+					processed.append(unconnected)
+		
 	
 	for corridor in temp_corridors.values():
 		corridors.append(corridor)
 
-func determine_steps() -> void:
-	pass 
-
-func organize_tree() -> void:
-	pass 
+func get_loc(grid_pos) -> Vector2:
+	return $TileMap.map_to_world(grid_pos)
 
 func _draw() -> void:
 	for corridor in corridors:
 		draw_line(corridor[0], corridor[1], Color.black, 5.0)
-
-func _on_Button_pressed() -> void:
-	for child in $Rooms.get_children():
-		child.queue_free()
-
-	generate()
