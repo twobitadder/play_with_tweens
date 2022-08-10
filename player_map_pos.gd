@@ -5,10 +5,10 @@ signal move(direction)
 var map_pos := Vector2.ZERO
 var moving := false
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	update()
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if event is InputEventKey:
 		if event.pressed && !event.echo && !moving:
 			match event.physical_scancode:

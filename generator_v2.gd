@@ -9,7 +9,7 @@ export var interconnectedness := .65
 
 var num_rooms : int
 var rooms := {}
-var corridors := []
+var corridors := {}
 var after_first_pass := false
 var has_heart := true
 var has_mind := true
@@ -26,6 +26,9 @@ func _ready() -> void:
 	randomize()
 	generate()
 
+func _process(delta: float) -> void:
+	update()
+
 func generate() -> void:
 	for child in $Rooms.get_children():
 		child.queue_free()
@@ -37,6 +40,7 @@ func generate() -> void:
 	has_mind = true
 	place_rooms()
 	connect_rooms()
+	show_neighbors(Vector2.ZERO)
 	update()
 
 func place_rooms() -> void:
@@ -48,13 +52,13 @@ func place_rooms() -> void:
 	$Rooms.add_child(entrance)
 	entrance.position = $TileMap.map_to_world(Vector2.ZERO)
 	print(rooms.size())
-	spawn_neighbors(entrance, Vector2.ZERO)
+	spawn_neighbors(Vector2.ZERO)
 	print(rooms.size())
 	if rooms.size() < num_rooms:
 		after_first_pass = true
-		spawn_neighbors(entrance, Vector2.ZERO)
+		spawn_neighbors(Vector2.ZERO)
 
-func spawn_neighbors(room, grid_position) -> void:
+func spawn_neighbors( grid_position) -> void:
 	var neighbors_to_spawn : int
 	if rooms.size() < min_size || after_first_pass:
 		#anywhere from 1-3 neighbors
@@ -63,6 +67,7 @@ func spawn_neighbors(room, grid_position) -> void:
 		#anywhere from 0-3
 		neighbors_to_spawn = randi() % 4
 	
+# warning-ignore:narrowing_conversion
 	neighbors_to_spawn = min(neighbors_to_spawn, num_rooms - rooms.size())
 	
 	if neighbors_to_spawn == 0:
@@ -83,11 +88,12 @@ func spawn_neighbors(room, grid_position) -> void:
 		blank_room.type = determine_room()
 		rooms[next_dir] = blank_room
 		$Rooms.add_child(blank_room)
+		blank_room.hide()
 		blank_room.position = $TileMap.map_to_world(next_dir)
 		next_rooms[next_dir] = blank_room
 	
 	for next_room in next_rooms.keys():
-		spawn_neighbors(next_rooms[next_room], next_room)
+		spawn_neighbors(next_room)
 
 func determine_room() -> int:
 	var num_valid = false
@@ -152,16 +158,45 @@ func determine_steps(temp_corridors, unconnected_rooms) -> void:
 				if rooms.has(unconnected + neighbor) && \
 				(rooms[unconnected + neighbor].parents.size() > 0 || rooms[unconnected + neighbor].type == MapRoom.TYPE.ENTRANCE):
 					temp_corridors[[unconnected, unconnected + neighbor]] = [rooms[unconnected].position, rooms[unconnected + neighbor].position]
-					rooms[unconnected + neighbor].add_tree_child(rooms[unconnected])
+					rooms[unconnected + neighbor].add_tree_parent(rooms[unconnected])
 					processed.append(unconnected)
 		
 	
-	for corridor in temp_corridors.values():
-		corridors.append(corridor)
+	for corridor in temp_corridors.keys():
+		corridors[corridor] = [false, temp_corridors[corridor]]
 
 func get_loc(grid_pos) -> Vector2:
 	return $TileMap.map_to_world(grid_pos)
 
+func test_move(start_grid, dest_grid) -> bool:
+	if !rooms.has(dest_grid):
+		return false
+	
+	var start_room = rooms[start_grid]
+	var dest_room = rooms[dest_grid]
+	
+	if start_room.children.has(dest_room) || start_room.parents.has(dest_room):
+		show_neighbors(dest_grid)
+		return true
+	
+	return false
+
+func show_neighbors(coord) -> void:	
+	for child in rooms[coord].children:
+		child.show()
+	
+	for parent in rooms[coord].parents:
+		parent.show()
+	
+	var neighbors = [Vector2.UP, Vector2.DOWN, Vector2.RIGHT, Vector2.LEFT]
+	
+	for neighbor in neighbors:
+		if corridors.has([coord, coord + neighbor]):
+			corridors[[coord, coord + neighbor]][0] = true
+		elif corridors.has([coord + neighbor, coord]):
+			corridors[[coord + neighbor, coord]][0] = true
+
 func _draw() -> void:
-	for corridor in corridors:
-		draw_line(corridor[0], corridor[1], Color.black, 5.0)
+	for corridor in corridors.keys():
+		if corridors[corridor][0]:
+			draw_line(corridors[corridor][1][0], corridors[corridor][1][1], Color.black, 5.0)
