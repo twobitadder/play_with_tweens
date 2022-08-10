@@ -23,6 +23,6 @@ _global_script_class_icons={
 config/name="anotherilladvisedproject"
 config/icon="res://icon.png"
 
-[rendering]
+[gui]
 
-environment/default_environment="res://default_env.tres"
+theme/custom="res://light.tres"

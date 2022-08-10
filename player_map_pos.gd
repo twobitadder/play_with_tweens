@@ -24,7 +24,7 @@ func _input(event: InputEvent) -> void:
 func move(target) -> void:
 	var tween = get_tree().create_tween()
 	tween.connect("finished", self, "move_ready")
-	var pending = tween.tween_property(self, "position", target, 0.5)
+	var pending = tween.tween_property(self, "position", target, 0.25)
 	pending.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tween.play()
 	moving = true
