@@ -1,18 +1,15 @@
 extends Node2D
 
-var room_template = preload("res://MapRoom.tscn")
+var room_template = preload("res://Cyberspace/Map/MapRoom.tscn")
+var object_resource = preload("res://Cyberspace/Objects/Resources/object_data.gd")
 
-export var min_size := 5
-export var max_size := 15
-export var max_iterations := 100
-export var interconnectedness := .65
+export var map_resource : Resource
 
 var num_rooms : int
 var rooms := {}
 var corridors := {}
 var after_first_pass := false
-var has_heart := true
-var has_mind := true
+var traverse_cost : float setget ,get_traverse_cost
 
 class RoomSorter:
 	static func sort_rooms(a, b) -> bool:
@@ -26,8 +23,11 @@ func _ready() -> void:
 	randomize()
 	generate()
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	update()
+
+func get_traverse_cost() -> float:
+	return map_resource.traverse_cost
 
 func generate() -> void:
 	for child in $Rooms.get_children():
@@ -36,14 +36,17 @@ func generate() -> void:
 	rooms.clear()
 	corridors.clear()
 	after_first_pass = false
-	has_heart = true
-	has_mind = true
+	map_resource.placed_heart = false
+	map_resource.placed_mind = false
 	place_rooms()
 	connect_rooms()
+	place_objects()
 	show_neighbors(Vector2.ZERO)
 	update()
 
 func place_rooms() -> void:
+	var max_size = map_resource.max_size
+	var min_size = map_resource.min_size
 	num_rooms = randi() % (max_size - min_size) + min_size
 	
 	var entrance = room_template.instance()
@@ -59,6 +62,7 @@ func place_rooms() -> void:
 		spawn_neighbors(Vector2.ZERO)
 
 func spawn_neighbors( grid_position) -> void:
+	var min_size = map_resource.min_size
 	var neighbors_to_spawn : int
 	if rooms.size() < min_size || after_first_pass:
 		#anywhere from 1-3 neighbors
@@ -102,15 +106,15 @@ func determine_room() -> int:
 		#1 to 5
 		num = randi() % 5 + 1
 		if num == MapRoom.TYPE.HEART:
-			if !has_heart:
+			if !map_resource.has_heart || map_resource.placed_heart:
 				continue
 			else:
-				has_heart = false
+				map_resource.placed_heart = true
 		elif num == MapRoom.TYPE.MIND:
-			if !has_mind:
+			if !map_resource.has_mind || map_resource.placed_mind:
 				continue
 			else:
-				has_mind = false
+				map_resource.placed_mind = true
 		num_valid = true
 	
 	return num
@@ -126,7 +130,7 @@ func connect_rooms() -> void:
 		for neighbor in neighbors:
 			if rooms.has(room + neighbor):
 				if !temp_corridors.has([room, room + neighbor] && !temp_corridors.has([room + neighbor, room])):
-					if randf() < interconnectedness:
+					if randf() < map_resource.interconnectedness:
 						if unconnected_rooms.has(room):
 							unconnected_rooms.erase(room)
 						temp_corridors[[room, room + neighbor]] = [rooms[room].position, rooms[room + neighbor].position]
@@ -164,6 +168,29 @@ func determine_steps(temp_corridors, unconnected_rooms) -> void:
 	
 	for corridor in temp_corridors.keys():
 		corridors[corridor] = [false, temp_corridors[corridor]]
+
+func place_objects() -> void:
+	var placed_ice := 0
+	var placed_data := 0
+	
+	while placed_ice < map_resource.num_ice || placed_data < map_resource.num_data:
+		var room_queue = rooms.keys().duplicate()
+		room_queue.shuffle()
+		for room in room_queue:
+			if rooms[room].type == MapRoom.TYPE.ENTRANCE:
+				continue
+			match rooms[room].type:
+				MapRoom.TYPE.DATA:
+					var new_object = object_resource.new()
+					new_object.create(map_resource.server_strength, ObjectData.TYPE.DATA)
+					rooms[room].objects.append(new_object)
+					placed_data += 1
+				_:
+					if placed_ice <= map_resource.num_ice:
+						var new_object = object_resource.new()
+						new_object.create(map_resource.server_strength)
+						rooms[room].objects.append(new_object)
+						placed_ice += 1
 
 func get_loc(grid_pos) -> Vector2:
 	return $TileMap.map_to_world(grid_pos)

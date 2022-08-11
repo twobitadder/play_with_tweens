@@ -1,0 +1,90 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://Assets/Objects/element_blue_diamond.png" type="Texture" id=1]
+[ext_resource path="res://Assets/Objects/ballGrey.png" type="Texture" id=2]
+[ext_resource path="res://Cyberspace/Objects/cyber_object.gd" type="Script" id=3]
+[ext_resource path="res://Cyberspace/Objects/Resources/test.tres" type="Resource" id=4]
+
+[node name="CyberObject" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 0.033
+margin_bottom = -19.8
+rect_min_size = Vector2( 0, 20 )
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource( 3 )
+__meta__ = {
+"_edit_use_anchors_": true
+}
+object_data = ExtResource( 4 )
+
+[node name="CenterContainer" type="MarginContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 1
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ActionProgress" type="ProgressBar" parent="CenterContainer"]
+unique_name_in_owner = true
+margin_right = 1024.0
+margin_bottom = 20.0
+mouse_filter = 1
+size_flags_horizontal = 3
+size_flags_vertical = 3
+percent_visible = false
+__meta__ = {
+"_edit_use_anchors_": true
+}
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Appearance" type="TextureRect" parent="HBoxContainer"]
+unique_name_in_owner = true
+margin_right = 20.0
+margin_bottom = 21.0
+rect_min_size = Vector2( 20, 20 )
+size_flags_horizontal = 9
+size_flags_vertical = 3
+texture = ExtResource( 1 )
+expand = true
+stretch_mode = 6
+
+[node name="Name" type="Label" parent="HBoxContainer"]
+unique_name_in_owner = true
+margin_left = 24.0
+margin_right = 114.0
+margin_bottom = 21.0
+mouse_filter = 1
+text = "Test Item"
+
+[node name="Control" type="Control" parent="HBoxContainer"]
+margin_left = 118.0
+margin_right = 128.0
+margin_bottom = 21.0
+rect_min_size = Vector2( 10, 0 )
+mouse_filter = 1
+
+[node name="TextureRect" type="TextureRect" parent="HBoxContainer"]
+margin_left = 132.0
+margin_right = 152.0
+margin_bottom = 21.0
+rect_min_size = Vector2( 20, 20 )
+texture = ExtResource( 2 )
+expand = true
+stretch_mode = 6
+
+[node name="Status" type="Label" parent="HBoxContainer"]
+unique_name_in_owner = true
+margin_left = 156.0
+margin_right = 246.0
+margin_bottom = 21.0
+mouse_filter = 1
+text = "Encrypted"
+
+[connection signal="gui_input" from="." to="." method="_on_CyberObject_gui_input"]
+[connection signal="mouse_entered" from="." to="." method="_on_CyberObject_mouse_entered"]
+[connection signal="mouse_exited" from="." to="." method="_on_CyberObject_mouse_exited"]
+[connection signal="value_changed" from="CenterContainer/ActionProgress" to="." method="update_progress_color"]

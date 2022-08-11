@@ -1,0 +1,18 @@
+[gd_resource type="Resource" load_steps=3 format=2]
+
+[ext_resource path="res://Cyberspace/Objects/Resources/object_data.gd" type="Script" id=1]
+[ext_resource path="res://Assets/Objects/element_purple_diamond.png" type="Texture" id=2]
+
+[resource]
+script = ExtResource( 1 )
+type = 0
+appearance = ExtResource( 2 )
+name = "Test"
+status = ""
+action_started_color = Color( 0, 1, 0.0392157, 1 )
+action_completed_color = Color( 1, 0, 0, 1 )
+strength = 0.0
+max_integrity = 0.0
+speed = 0.0
+can_move = false
+valid_actions = [  ]

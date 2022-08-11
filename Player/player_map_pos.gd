@@ -10,7 +10,7 @@ func _process(_delta: float) -> void:
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey:
-		if event.pressed && !event.echo && !moving:
+		if event.pressed && !event.echo && !moving && !PlayerInfo.is_interacting:
 			match event.physical_scancode:
 				KEY_LEFT:
 					emit_signal("move", Vector2.LEFT)

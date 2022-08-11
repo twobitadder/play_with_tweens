@@ -16,6 +16,9 @@ var type setget set_type
 #steps from the entrance, or depth it exists on the tree.
 var steps := 0
 
+#everything inside of the room
+var objects := []
+
 
 #a particular room in the server dungeon should (for now) PROBABLY
 #only have one parent, but multiple children is ok

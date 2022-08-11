@@ -1,12 +1,9 @@
 [gd_scene load_steps=2 format=2]
 
-[ext_resource path="res://generator_v2.gd" type="Script" id=1]
+[ext_resource path="res://Cyberspace/Map/generator_v2.gd" type="Script" id=1]
 
 [node name="ServerMap" type="Node2D"]
 script = ExtResource( 1 )
-min_size = 10
-max_size = 20
-interconnectedness = 0.7
 
 [node name="TileMap" type="TileMap" parent="."]
 cell_size = Vector2( 100, 100 )
