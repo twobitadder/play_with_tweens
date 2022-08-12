@@ -3,6 +3,7 @@ class_name ObjectData
 
 signal change_status(status, color)
 signal update_meter(value)
+signal depleted
 
 enum TYPE { GATEWAY, MONITOR, PROXY, SENTRY, DATA, KILL, TRACE, COOK}
 
@@ -17,10 +18,12 @@ export (float) var max_integrity
 export (float) var speed
 export (bool) var can_move
 export (Array) var valid_actions
+export (Vector2) var grid_position 
 
-var integrity : float
+var integrity : float setget set_integrity
 var interaction
 var interacting := false
+var machine : StateMachine
 
 func create(server_strength : float, _type := -1) -> void:
 	if _type != -1:
@@ -37,7 +40,7 @@ func create(server_strength : float, _type := -1) -> void:
 			action_started_color = Color.green
 			action_completed_color = Color.orange
 			strength = 10.0
-			max_integrity = 20.0
+			max_integrity = 1.0
 			speed = 0.9
 			status = "OK"
 			can_move = false
@@ -49,7 +52,7 @@ func create(server_strength : float, _type := -1) -> void:
 			action_started_color = Color.green
 			action_completed_color = Color.orange
 			strength = 10.0
-			max_integrity = 20.0
+			max_integrity = 1.0
 			speed = 0.9
 			status = "OK"
 			can_move = true
@@ -61,7 +64,7 @@ func create(server_strength : float, _type := -1) -> void:
 			action_started_color = Color.green
 			action_completed_color = Color.orange
 			strength = 10.0
-			max_integrity = 20.0
+			max_integrity = 1.0
 			speed = 0.9
 			status = "OK"
 			can_move = true
@@ -73,7 +76,7 @@ func create(server_strength : float, _type := -1) -> void:
 			action_started_color = Color.green
 			action_completed_color = Color.orange
 			strength = 10.0
-			max_integrity = 20.0
+			max_integrity = 1.0
 			speed = 0.9
 			status = "OK"
 			can_move = true
@@ -85,7 +88,7 @@ func create(server_strength : float, _type := -1) -> void:
 			action_started_color = Color.yellow
 			action_completed_color = Color.blue
 			strength = 10.0
-			max_integrity = 20.0
+			max_integrity = 1.0
 			speed = 0.9
 			status = "ENCRYPTED"
 			can_move = false
@@ -97,7 +100,7 @@ func create(server_strength : float, _type := -1) -> void:
 			action_started_color = Color.green
 			action_completed_color = Color.red
 			strength = 10.0
-			max_integrity = 20.0
+			max_integrity = 1.0
 			speed = 0.9
 			status = "OK"
 			can_move = true
@@ -109,7 +112,7 @@ func create(server_strength : float, _type := -1) -> void:
 			action_started_color = Color.green
 			action_completed_color = Color.red
 			strength = 10.0
-			max_integrity = 20.0
+			max_integrity = 1.0
 			speed = 0.9
 			status = "OK"
 			can_move = true
@@ -121,7 +124,7 @@ func create(server_strength : float, _type := -1) -> void:
 			action_started_color = Color.yellow
 			action_completed_color = Color.red
 			strength = 10.0
-			max_integrity = 20.0
+			max_integrity = 1.0
 			speed = 0.9
 			status = "OK"
 			can_move = true
@@ -133,13 +136,12 @@ func create(server_strength : float, _type := -1) -> void:
 	integrity = max_integrity
 
 func _on_pass_time(time_passed : float) -> void:
+	machine.update(time_passed)
 	if interacting:
 		interaction.call_func(time_passed)
 
 func take_damage(time_passed : float) -> void:
-	print(time_passed)
-	integrity -= time_passed
-	print(integrity)
+	self.integrity -= time_passed
 	emit_signal("update_meter", range_lerp(integrity, max_integrity, 0.0, 0.0, 100.0))
 	if integrity < 12 && integrity > 6:
 		status = "COMPROMISED"
@@ -158,6 +160,10 @@ func get_decrypted(time_passed : float) -> void:
 		status = "DOWNLOADING"
 		emit_signal("change_status", status, Color.red)
 
+func set_integrity(value) -> void:
+	integrity = value
+	if integrity <= 0.0:
+		emit_signal("depleted")
+
 func interact(action : int) -> void:
-	PlayerInfo.set_interacting(action)
 	interacting = true

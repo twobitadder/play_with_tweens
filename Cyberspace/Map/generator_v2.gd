@@ -54,9 +54,7 @@ func place_rooms() -> void:
 	rooms[Vector2.ZERO] = entrance
 	$Rooms.add_child(entrance)
 	entrance.position = $TileMap.map_to_world(Vector2.ZERO)
-	print(rooms.size())
 	spawn_neighbors(Vector2.ZERO)
-	print(rooms.size())
 	if rooms.size() < num_rooms:
 		after_first_pass = true
 		spawn_neighbors(Vector2.ZERO)
@@ -184,12 +182,14 @@ func place_objects() -> void:
 					var new_object = object_resource.new()
 					new_object.create(map_resource.server_strength, ObjectData.TYPE.DATA)
 					rooms[room].objects.append(new_object)
+					new_object.grid_position = room
 					placed_data += 1
 				_:
 					if placed_ice <= map_resource.num_ice:
 						var new_object = object_resource.new()
 						new_object.create(map_resource.server_strength)
 						rooms[room].objects.append(new_object)
+						new_object.grid_position = room
 						placed_ice += 1
 
 func get_loc(grid_pos) -> Vector2:

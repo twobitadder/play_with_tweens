@@ -1,3 +1,4 @@
+#warning-ignore-all:return_value_discarded
 extends Control
 
 signal selected
@@ -16,6 +17,7 @@ func _ready() -> void:
 	$"%ActionProgress".value = 0
 	object_data.connect("change_status", self, "_on_change_status")
 	object_data.connect("update_meter", self, "_on_update_meter")
+	object_data.connect("depleted", self, "queue_free")
 
 func _on_CyberObject_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:

@@ -16,3 +16,4 @@ max_integrity = 0.0
 speed = 0.0
 can_move = false
 valid_actions = [  ]
+grid_position = Vector2( 0, 0 )

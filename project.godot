@@ -23,11 +23,23 @@ _global_script_classes=[ {
 "class": "ObjectData",
 "language": "GDScript",
 "path": "res://Cyberspace/Objects/Resources/object_data.gd"
+}, {
+"base": "Node",
+"class": "State",
+"language": "GDScript",
+"path": "res://Abstract/StateMachine/state.gd"
+}, {
+"base": "Resource",
+"class": "StateMachine",
+"language": "GDScript",
+"path": "res://Abstract/StateMachine/state_machine.gd"
 } ]
 _global_script_class_icons={
 "MapResource": "",
 "MapRoom": "",
-"ObjectData": ""
+"ObjectData": "",
+"State": "",
+"StateMachine": ""
 }
 
 [application]
