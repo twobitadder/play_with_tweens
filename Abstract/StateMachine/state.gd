@@ -1,7 +1,9 @@
-extends Node
+extends Resource
 class_name State
 
 signal done(next_state)
+
+var state_name = "base--unusable"
 
 func setup(object, machine) -> void:
 	connect("done", machine, "change_state")
@@ -12,5 +14,5 @@ func enter_state(prev_state) -> void:
 func exit_state() -> bool:
 	return true
 
-func update(delta) -> void:
+func process(delta) -> void:
 	pass

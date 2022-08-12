@@ -43,6 +43,7 @@ func generate() -> void:
 	place_objects()
 	show_neighbors(Vector2.ZERO)
 	update()
+	print_stray_nodes()
 
 func place_rooms() -> void:
 	var max_size = map_resource.max_size
@@ -170,8 +171,10 @@ func determine_steps(temp_corridors, unconnected_rooms) -> void:
 func place_objects() -> void:
 	var placed_ice := 0
 	var placed_data := 0
+	var iterations := 0
 	
 	while placed_ice < map_resource.num_ice || placed_data < map_resource.num_data:
+		var placed := false
 		var room_queue = rooms.keys().duplicate()
 		room_queue.shuffle()
 		for room in room_queue:
@@ -184,6 +187,7 @@ func place_objects() -> void:
 					rooms[room].objects.append(new_object)
 					new_object.grid_position = room
 					placed_data += 1
+					placed = true
 				_:
 					if placed_ice <= map_resource.num_ice:
 						var new_object = object_resource.new()
@@ -191,6 +195,11 @@ func place_objects() -> void:
 						rooms[room].objects.append(new_object)
 						new_object.grid_position = room
 						placed_ice += 1
+						placed = true
+		if !placed:
+			iterations += 1
+		if iterations >= map_resource.max_iterations:
+			generate()
 
 func get_loc(grid_pos) -> Vector2:
 	return $TileMap.map_to_world(grid_pos)

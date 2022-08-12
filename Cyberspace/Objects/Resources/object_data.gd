@@ -1,6 +1,8 @@
 extends Resource
 class_name ObjectData
 
+var state_machine = preload("res://Abstract/StateMachine/state_machine.gd")
+
 signal change_status(status, color)
 signal update_meter(value)
 signal depleted
@@ -33,6 +35,8 @@ func create(server_strength : float, _type := -1) -> void:
 		#kill, trace, and cook should be response ICE
 		type = randi() % 4
 	
+	var base_states := []
+	
 	match type:
 		TYPE.GATEWAY:
 			name = "Gateway Daemon %d" % (randi() % 10000)
@@ -46,6 +50,7 @@ func create(server_strength : float, _type := -1) -> void:
 			can_move = false
 			interaction = funcref(self, "take_damage")
 			valid_actions = [PlayerInfo.ATTACK_TYPE.SPOOF, PlayerInfo.ATTACK_TYPE.FUZZ, PlayerInfo.ATTACK_TYPE.DISABLE]
+			base_states = []
 		TYPE.MONITOR:
 			name = "Monitor Daemon %d" % (randi() % 10000)
 			appearance = load("res://Assets/Objects/element_blue_diamond.png")
@@ -58,6 +63,7 @@ func create(server_strength : float, _type := -1) -> void:
 			can_move = true
 			interaction = funcref(self, "take_damage")
 			valid_actions = [PlayerInfo.ATTACK_TYPE.SPOOF, PlayerInfo.ATTACK_TYPE.FUZZ, PlayerInfo.ATTACK_TYPE.DISABLE]
+			base_states = []
 		TYPE.PROXY:
 			name = "Proxy Daemon %d" % (randi() % 10000)
 			appearance = load("res://Assets/Objects/element_grey_diamond.png")
@@ -70,6 +76,7 @@ func create(server_strength : float, _type := -1) -> void:
 			can_move = true
 			interaction = funcref(self, "take_damage")
 			valid_actions = [PlayerInfo.ATTACK_TYPE.SPOOF, PlayerInfo.ATTACK_TYPE.FUZZ, PlayerInfo.ATTACK_TYPE.DISABLE]
+			base_states = []
 		TYPE.SENTRY:
 			name = "Sentry Daemon %d" % (randi() % 10000)
 			appearance = load("res://Assets/Objects/element_red_diamond.png")
@@ -82,6 +89,7 @@ func create(server_strength : float, _type := -1) -> void:
 			can_move = true
 			interaction = funcref(self, "take_damage")
 			valid_actions = [PlayerInfo.ATTACK_TYPE.SPOOF, PlayerInfo.ATTACK_TYPE.FUZZ, PlayerInfo.ATTACK_TYPE.DISABLE]
+			base_states = []
 		TYPE.DATA:
 			name = "Data File %X" % (randi() % 10000)
 			appearance = load("res://Assets/Objects/element_blue_square.png")
@@ -94,6 +102,7 @@ func create(server_strength : float, _type := -1) -> void:
 			can_move = false
 			interaction = funcref(self, "get_decrypted")
 			valid_actions = [PlayerInfo.ATTACK_TYPE.ANALYZE, PlayerInfo.ATTACK_TYPE.DECRYPT, PlayerInfo.ATTACK_TYPE.DOWNLOAD]
+			base_states = []
 		TYPE.KILL:
 			name = "Kill Countermeasure %d" % (randi() % 10000)
 			appearance = load("res://Assets/Objects/element_yellow_polygon.png")
@@ -106,6 +115,7 @@ func create(server_strength : float, _type := -1) -> void:
 			can_move = true
 			interaction = funcref(self, "take_damage")
 			valid_actions = [PlayerInfo.ATTACK_TYPE.SPOOF, PlayerInfo.ATTACK_TYPE.FUZZ, PlayerInfo.ATTACK_TYPE.DISABLE]
+			base_states = []
 		TYPE.TRACE:
 			name = "Trace Countermeasure %d" % (randi() % 10000)
 			appearance = load("res://Assets/Objects/element_red_polygon.png")
@@ -118,6 +128,7 @@ func create(server_strength : float, _type := -1) -> void:
 			can_move = true
 			interaction = funcref(self, "take_damage")
 			valid_actions = [PlayerInfo.ATTACK_TYPE.SPOOF, PlayerInfo.ATTACK_TYPE.FUZZ, PlayerInfo.ATTACK_TYPE.DISABLE]
+			base_states = []
 		TYPE.COOK:
 			name = "Cook Countermeasure %d" % (randi() % 10000)
 			appearance = load("res://Assets/Objects/element_purple_polygon.png")
@@ -130,13 +141,16 @@ func create(server_strength : float, _type := -1) -> void:
 			can_move = true
 			interaction = funcref(self, "take_damage")
 			valid_actions = [PlayerInfo.ATTACK_TYPE.SPOOF, PlayerInfo.ATTACK_TYPE.FUZZ, PlayerInfo.ATTACK_TYPE.DISABLE]
-	
+			base_states = []
+
+	machine = state_machine.new()
+	machine.setup(self, base_states)
 	TimeKeeper.connect("pass_time", self, "_on_pass_time")
 	emit_signal("change_status", status, Color.green)
 	integrity = max_integrity
 
 func _on_pass_time(time_passed : float) -> void:
-	machine.update(time_passed)
+	machine.process(time_passed)
 	if interacting:
 		interaction.call_func(time_passed)
 
