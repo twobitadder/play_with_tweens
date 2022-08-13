@@ -24,7 +24,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://Cyberspace/Objects/Resources/object_data.gd"
 }, {
-"base": "Node",
+"base": "Resource",
 "class": "State",
 "language": "GDScript",
 "path": "res://Abstract/StateMachine/state.gd"
@@ -59,8 +59,4 @@ window/stretch/aspect="keep"
 
 [gui]
 
-theme/custom="res://light.tres"
-
-[rendering]
-
-environment/default_environment="res://default_env.tres"
+theme/custom="res://Assets/light.tres"
