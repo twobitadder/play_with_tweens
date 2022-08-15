@@ -1,7 +1,7 @@
 extends Resource
 class_name StateMachine
 
-var idle_state = preload("res://Abstract/StateMachine/idle.gd")
+var idle_state = preload("res://Abstract/StateMachine/States/idle.gd")
 
 signal state_entering(state_name)
 signal state_exited(state_name)
@@ -11,6 +11,7 @@ var state_map := {}
 var states := []
 
 func setup(attached_object, base_states : Array) -> void:
+	connect("state_entering", attached_object, "update_state")
 	object = attached_object
 	for state in base_states:
 		add_state(state)
@@ -25,7 +26,7 @@ func process(delta : float) -> void:
 	state_map[states.front()].process(delta)
 
 func change_state(new_state : String) -> void:
-	var valid = state_map[states.front()].exit_state()
+	var valid = state_map[states.front()].exit_state(new_state)
 	
 	if (!valid):
 		return
@@ -44,6 +45,7 @@ func change_state(new_state : String) -> void:
 	
 	emit_signal("state_entering", states.front())
 	state_map[states.front()].enter_state(prev_state)
+	WorldState.report_event("%s has entered state %s" % [object.name, states.front()])
 
 func has_state(state : String) -> bool:
 	return state_map.has(state)

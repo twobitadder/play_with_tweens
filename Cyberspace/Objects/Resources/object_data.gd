@@ -4,7 +4,9 @@ class_name ObjectData
 var state_machine = preload("res://Abstract/StateMachine/state_machine.gd")
 
 signal change_status(status, color)
+signal change_state(state, color)
 signal update_meter(value)
+signal spoof_received
 signal depleted
 
 enum TYPE { GATEWAY, MONITOR, PROXY, SENTRY, DATA, KILL, TRACE, COOK}
@@ -18,9 +20,13 @@ export (Color) var action_completed_color
 export (float) var strength
 export (float) var max_integrity
 export (float) var speed
+export (float) var query_time
 export (bool) var can_move
 export (Array) var valid_actions
 export (Vector2) var grid_position 
+export (bool) var is_placated = false
+export (bool) var is_active = true
+export (bool) var is_suspicious
 
 var integrity : float setget set_integrity
 var interaction
@@ -46,11 +52,15 @@ func create(server_strength : float, _type := -1) -> void:
 			strength = 10.0
 			max_integrity = 1.0
 			speed = 0.9
+			query_time = 2.5
 			status = "OK"
 			can_move = false
+			is_suspicious = false
 			interaction = funcref(self, "take_damage")
 			valid_actions = [PlayerInfo.ATTACK_TYPE.SPOOF, PlayerInfo.ATTACK_TYPE.FUZZ, PlayerInfo.ATTACK_TYPE.DISABLE]
-			base_states = []
+			base_states = [load("res://Abstract/StateMachine/States/Object/ICE/idle_active.gd").new(),
+			load("res://Abstract/StateMachine/States/Object/ICE/scan.gd").new(), load("res://Abstract/StateMachine/States/Object/ICE/query.gd").new(),
+			load("res://Abstract/StateMachine/States/Object/ICE/activate.gd").new(), load("res://Abstract/StateMachine/States/Object/ICE/hunt.gd").new()]
 		TYPE.MONITOR:
 			name = "Monitor Daemon %d" % (randi() % 10000)
 			appearance = load("res://Assets/Objects/element_blue_diamond.png")
@@ -59,11 +69,15 @@ func create(server_strength : float, _type := -1) -> void:
 			strength = 10.0
 			max_integrity = 1.0
 			speed = 0.9
+			query_time = 2.5
 			status = "OK"
 			can_move = true
+			is_suspicious = false
 			interaction = funcref(self, "take_damage")
 			valid_actions = [PlayerInfo.ATTACK_TYPE.SPOOF, PlayerInfo.ATTACK_TYPE.FUZZ, PlayerInfo.ATTACK_TYPE.DISABLE]
-			base_states = []
+			base_states = [load("res://Abstract/StateMachine/States/Object/ICE/idle_active.gd").new(),
+			load("res://Abstract/StateMachine/States/Object/ICE/scan.gd").new(), load("res://Abstract/StateMachine/States/Object/ICE/query.gd").new(),
+			load("res://Abstract/StateMachine/States/Object/ICE/activate.gd").new(), load("res://Abstract/StateMachine/States/Object/ICE/hunt.gd").new()]
 		TYPE.PROXY:
 			name = "Proxy Daemon %d" % (randi() % 10000)
 			appearance = load("res://Assets/Objects/element_grey_diamond.png")
@@ -72,11 +86,15 @@ func create(server_strength : float, _type := -1) -> void:
 			strength = 10.0
 			max_integrity = 1.0
 			speed = 0.9
+			query_time = 2.5
 			status = "OK"
 			can_move = true
+			is_suspicious = false
 			interaction = funcref(self, "take_damage")
 			valid_actions = [PlayerInfo.ATTACK_TYPE.SPOOF, PlayerInfo.ATTACK_TYPE.FUZZ, PlayerInfo.ATTACK_TYPE.DISABLE]
-			base_states = []
+			base_states = [load("res://Abstract/StateMachine/States/Object/ICE/idle_active.gd").new(),
+			load("res://Abstract/StateMachine/States/Object/ICE/scan.gd").new(), load("res://Abstract/StateMachine/States/Object/ICE/query.gd").new(),
+			load("res://Abstract/StateMachine/States/Object/ICE/activate.gd").new(), load("res://Abstract/StateMachine/States/Object/ICE/hunt.gd").new()]
 		TYPE.SENTRY:
 			name = "Sentry Daemon %d" % (randi() % 10000)
 			appearance = load("res://Assets/Objects/element_red_diamond.png")
@@ -85,11 +103,15 @@ func create(server_strength : float, _type := -1) -> void:
 			strength = 10.0
 			max_integrity = 1.0
 			speed = 0.9
+			query_time = 2.5
 			status = "OK"
 			can_move = true
+			is_suspicious = false
 			interaction = funcref(self, "take_damage")
 			valid_actions = [PlayerInfo.ATTACK_TYPE.SPOOF, PlayerInfo.ATTACK_TYPE.FUZZ, PlayerInfo.ATTACK_TYPE.DISABLE]
-			base_states = []
+			base_states = [load("res://Abstract/StateMachine/States/Object/ICE/idle_active.gd").new(),
+			load("res://Abstract/StateMachine/States/Object/ICE/scan.gd").new(), load("res://Abstract/StateMachine/States/Object/ICE/query.gd").new(),
+			load("res://Abstract/StateMachine/States/Object/ICE/activate.gd").new(), load("res://Abstract/StateMachine/States/Object/ICE/hunt.gd").new()]
 		TYPE.DATA:
 			name = "Data File %X" % (randi() % 10000)
 			appearance = load("res://Assets/Objects/element_blue_square.png")
@@ -98,8 +120,10 @@ func create(server_strength : float, _type := -1) -> void:
 			strength = 10.0
 			max_integrity = 1.0
 			speed = 0.9
+			query_time = 2.5
 			status = "ENCRYPTED"
 			can_move = false
+			is_suspicious = false
 			interaction = funcref(self, "get_decrypted")
 			valid_actions = [PlayerInfo.ATTACK_TYPE.ANALYZE, PlayerInfo.ATTACK_TYPE.DECRYPT, PlayerInfo.ATTACK_TYPE.DOWNLOAD]
 			base_states = []
@@ -111,8 +135,10 @@ func create(server_strength : float, _type := -1) -> void:
 			strength = 10.0
 			max_integrity = 1.0
 			speed = 0.9
+			query_time = 2.5
 			status = "OK"
 			can_move = true
+			is_suspicious = true
 			interaction = funcref(self, "take_damage")
 			valid_actions = [PlayerInfo.ATTACK_TYPE.SPOOF, PlayerInfo.ATTACK_TYPE.FUZZ, PlayerInfo.ATTACK_TYPE.DISABLE]
 			base_states = []
@@ -124,8 +150,10 @@ func create(server_strength : float, _type := -1) -> void:
 			strength = 10.0
 			max_integrity = 1.0
 			speed = 0.9
+			query_time = 2.5
 			status = "OK"
 			can_move = true
+			is_suspicious = true
 			interaction = funcref(self, "take_damage")
 			valid_actions = [PlayerInfo.ATTACK_TYPE.SPOOF, PlayerInfo.ATTACK_TYPE.FUZZ, PlayerInfo.ATTACK_TYPE.DISABLE]
 			base_states = []
@@ -137,8 +165,10 @@ func create(server_strength : float, _type := -1) -> void:
 			strength = 10.0
 			max_integrity = 1.0
 			speed = 0.9
+			query_time = 2.5
 			status = "OK"
 			can_move = true
+			is_suspicious = true
 			interaction = funcref(self, "take_damage")
 			valid_actions = [PlayerInfo.ATTACK_TYPE.SPOOF, PlayerInfo.ATTACK_TYPE.FUZZ, PlayerInfo.ATTACK_TYPE.DISABLE]
 			base_states = []
@@ -148,8 +178,12 @@ func create(server_strength : float, _type := -1) -> void:
 	TimeKeeper.connect("pass_time", self, "_on_pass_time")
 	emit_signal("change_status", status, Color.green)
 	integrity = max_integrity
+	if type != TYPE.DATA:
+		machine.change_state("idle-active")
 
 func _on_pass_time(time_passed : float) -> void:
+	if !is_active:
+		return
 	machine.process(time_passed)
 	if interacting:
 		interaction.call_func(time_passed)
@@ -181,3 +215,6 @@ func set_integrity(value) -> void:
 
 func interact(action : int) -> void:
 	interacting = true
+
+func update_state(state_name) -> void:
+	emit_signal("change_state", state_name, Color.white)

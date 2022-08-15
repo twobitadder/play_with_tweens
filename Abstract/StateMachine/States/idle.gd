@@ -1,3 +1,4 @@
+#warnings-disable
 extends State
 
 func setup(object, machine) -> void:

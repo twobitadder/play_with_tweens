@@ -13,6 +13,8 @@ export var disable_strength := 1.0
 export var analyze_speed := 1.0
 export var decrypt_speed := 1.0
 export var download_speed := 1.0
+export var detect_chance := 0.6
+export var grid_pos := Vector2.ZERO
 
 
 func _ready() -> void:

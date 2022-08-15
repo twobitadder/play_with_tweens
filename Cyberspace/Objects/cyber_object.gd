@@ -15,9 +15,11 @@ func _ready() -> void:
 	$"%Name".text = object_data.name
 	$"%Status".text = object_data.status
 	$"%ActionProgress".value = 0
+	$"%State".text = object_data.machine.states.front().to_upper()
 	object_data.connect("change_status", self, "_on_change_status")
+	object_data.connect("change_state", self, "_on_change_state")
 	object_data.connect("update_meter", self, "_on_update_meter")
-	object_data.connect("depleted", self, "queue_free")
+	object_data.connect("depleted", self, "destroy")
 
 func _on_CyberObject_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
@@ -60,3 +62,10 @@ func interact(action : int) -> void:
 func _on_change_status(status: String, color : Color) -> void:
 	$"%Status".text = status
 	$"%Status".self_modulate = color
+
+func _on_change_state(state: String, color : Color) -> void:
+	$"%State".text = state.to_upper()
+
+func destroy() -> void:
+	object_data.is_active = false
+	queue_free()

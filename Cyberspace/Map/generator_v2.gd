@@ -3,8 +3,6 @@ extends Node2D
 var room_template = preload("res://Cyberspace/Map/MapRoom.tscn")
 var object_resource = preload("res://Cyberspace/Objects/Resources/object_data.gd")
 
-export var map_resource : Resource
-
 var num_rooms : int
 var rooms := {}
 var corridors := {}
@@ -27,7 +25,7 @@ func _process(_delta: float) -> void:
 	update()
 
 func get_traverse_cost() -> float:
-	return map_resource.traverse_cost
+	return WorldState.server.traverse_cost
 
 func generate() -> void:
 	for child in $Rooms.get_children():
@@ -36,18 +34,19 @@ func generate() -> void:
 	rooms.clear()
 	corridors.clear()
 	after_first_pass = false
-	map_resource.placed_heart = false
-	map_resource.placed_mind = false
+	WorldState.server.placed_heart = false
+	WorldState.server.placed_mind = false
 	place_rooms()
 	connect_rooms()
 	place_objects()
 	show_neighbors(Vector2.ZERO)
+	WorldState.server.rooms = rooms.duplicate()
+	WorldState.server.ice = invert_room_data().duplicate()
 	update()
-	print_stray_nodes()
 
 func place_rooms() -> void:
-	var max_size = map_resource.max_size
-	var min_size = map_resource.min_size
+	var max_size = WorldState.server.max_size
+	var min_size = WorldState.server.min_size
 	num_rooms = randi() % (max_size - min_size) + min_size
 	
 	var entrance = room_template.instance()
@@ -61,7 +60,7 @@ func place_rooms() -> void:
 		spawn_neighbors(Vector2.ZERO)
 
 func spawn_neighbors( grid_position) -> void:
-	var min_size = map_resource.min_size
+	var min_size = WorldState.server.min_size
 	var neighbors_to_spawn : int
 	if rooms.size() < min_size || after_first_pass:
 		#anywhere from 1-3 neighbors
@@ -105,15 +104,15 @@ func determine_room() -> int:
 		#1 to 5
 		num = randi() % 5 + 1
 		if num == MapRoom.TYPE.HEART:
-			if !map_resource.has_heart || map_resource.placed_heart:
+			if !WorldState.server.has_heart || WorldState.server.placed_heart:
 				continue
 			else:
-				map_resource.placed_heart = true
+				WorldState.server.placed_heart = true
 		elif num == MapRoom.TYPE.MIND:
-			if !map_resource.has_mind || map_resource.placed_mind:
+			if !WorldState.server.has_mind || WorldState.server.placed_mind:
 				continue
 			else:
-				map_resource.placed_mind = true
+				WorldState.server.placed_mind = true
 		num_valid = true
 	
 	return num
@@ -129,7 +128,7 @@ func connect_rooms() -> void:
 		for neighbor in neighbors:
 			if rooms.has(room + neighbor):
 				if !temp_corridors.has([room, room + neighbor] && !temp_corridors.has([room + neighbor, room])):
-					if randf() < map_resource.interconnectedness:
+					if randf() < WorldState.server.interconnectedness:
 						if unconnected_rooms.has(room):
 							unconnected_rooms.erase(room)
 						temp_corridors[[room, room + neighbor]] = [rooms[room].position, rooms[room + neighbor].position]
@@ -173,7 +172,7 @@ func place_objects() -> void:
 	var placed_data := 0
 	var iterations := 0
 	
-	while placed_ice < map_resource.num_ice || placed_data < map_resource.num_data:
+	while placed_ice < WorldState.server.num_ice || placed_data < WorldState.server.num_data:
 		var placed := false
 		var room_queue = rooms.keys().duplicate()
 		room_queue.shuffle()
@@ -183,22 +182,22 @@ func place_objects() -> void:
 			match rooms[room].type:
 				MapRoom.TYPE.DATA:
 					var new_object = object_resource.new()
-					new_object.create(map_resource.server_strength, ObjectData.TYPE.DATA)
+					new_object.create(WorldState.server.server_strength, ObjectData.TYPE.DATA)
 					rooms[room].objects.append(new_object)
 					new_object.grid_position = room
 					placed_data += 1
 					placed = true
 				_:
-					if placed_ice <= map_resource.num_ice:
+					if placed_ice <= WorldState.server.num_ice:
 						var new_object = object_resource.new()
-						new_object.create(map_resource.server_strength)
+						new_object.create(WorldState.server.server_strength)
 						rooms[room].objects.append(new_object)
 						new_object.grid_position = room
 						placed_ice += 1
 						placed = true
 		if !placed:
 			iterations += 1
-		if iterations >= map_resource.max_iterations:
+		if iterations >= WorldState.server.max_iterations:
 			generate()
 
 func get_loc(grid_pos) -> Vector2:
@@ -231,6 +230,18 @@ func show_neighbors(coord) -> void:
 			corridors[[coord, coord + neighbor]][0] = true
 		elif corridors.has([coord + neighbor, coord]):
 			corridors[[coord + neighbor, coord]][0] = true
+
+#data currently is: room contains ice
+#provide a dictionary with inverted information - ice as the key, containing room coordinate as value
+func invert_room_data() -> Dictionary:
+	var ice_information := {}
+	
+	for room in rooms.keys():
+		for object in rooms[room].objects:
+			if object.type != ObjectData.TYPE.DATA:
+				ice_information[object] = room
+	
+	return ice_information
 
 func _draw() -> void:
 	for corridor in corridors.keys():

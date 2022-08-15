@@ -53,6 +53,8 @@ func _on_room_entered(objects : Array) -> void:
 		child.queue_free()
 	
 	for object in objects:
+		if !object.is_active:
+			continue
 		var new_object = object_display.instance()
 		new_object.object_data = object
 		$"%RoomContents".add_child(new_object)

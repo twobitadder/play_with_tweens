@@ -9,11 +9,6 @@
 config_version=4
 
 _global_script_classes=[ {
-"base": "Resource",
-"class": "MapResource",
-"language": "GDScript",
-"path": "res://Cyberspace/Map/map_resource.gd"
-}, {
 "base": "Node2D",
 "class": "MapRoom",
 "language": "GDScript",
@@ -23,6 +18,16 @@ _global_script_classes=[ {
 "class": "ObjectData",
 "language": "GDScript",
 "path": "res://Cyberspace/Objects/Resources/object_data.gd"
+}, {
+"base": "Resource",
+"class": "RealWorldState",
+"language": "GDScript",
+"path": "res://Abstract/World/real_world_state.gd"
+}, {
+"base": "Resource",
+"class": "ServerState",
+"language": "GDScript",
+"path": "res://Abstract/World/server_state.gd"
 }, {
 "base": "Resource",
 "class": "State",
@@ -35,9 +40,10 @@ _global_script_classes=[ {
 "path": "res://Abstract/StateMachine/state_machine.gd"
 } ]
 _global_script_class_icons={
-"MapResource": "",
 "MapRoom": "",
 "ObjectData": "",
+"RealWorldState": "",
+"ServerState": "",
 "State": "",
 "StateMachine": ""
 }
@@ -51,6 +57,7 @@ config/icon="res://icon.png"
 
 PlayerInfo="*res://Player/PlayerInfo.tscn"
 TimeKeeper="*res://Abstract/TimeKeeper.tscn"
+WorldState="*res://Abstract/WorldState.tscn"
 
 [display]
 

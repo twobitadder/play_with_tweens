@@ -1,6 +1,30 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://Abstract/world_state.gd" type="Script" id=1]
+[ext_resource path="res://Abstract/World/real_world_state.gd" type="Script" id=2]
+[ext_resource path="res://Abstract/World/server_state.gd" type="Script" id=3]
+
+[sub_resource type="Resource" id=1]
+script = ExtResource( 2 )
+
+[sub_resource type="Resource" id=2]
+script = ExtResource( 3 )
+min_size = 5
+max_size = 15
+max_iterations = 100
+interconnectedness = 0.65
+has_heart = true
+has_mind = true
+server_strength = 1.0
+traverse_cost = 0.1
+num_ice = 10
+num_data = 20
+rooms = {
+}
+ice = {
+}
 
 [node name="WorldState" type="Node"]
 script = ExtResource( 1 )
+real_world = SubResource( 1 )
+server = SubResource( 2 )

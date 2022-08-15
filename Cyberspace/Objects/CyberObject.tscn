@@ -41,7 +41,12 @@ __meta__ = {
 anchor_right = 1.0
 anchor_bottom = 1.0
 
-[node name="Appearance" type="TextureRect" parent="HBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="HBoxContainer"]
+margin_right = 451.0
+margin_bottom = 21.0
+size_flags_horizontal = 3
+
+[node name="Appearance" type="TextureRect" parent="HBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
 margin_right = 20.0
 margin_bottom = 21.0
@@ -52,7 +57,7 @@ texture = ExtResource( 1 )
 expand = true
 stretch_mode = 6
 
-[node name="Name" type="Label" parent="HBoxContainer"]
+[node name="Name" type="Label" parent="HBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
 margin_left = 24.0
 margin_right = 114.0
@@ -60,29 +65,53 @@ margin_bottom = 21.0
 mouse_filter = 1
 text = "Test Item"
 
-[node name="Control" type="Control" parent="HBoxContainer"]
-margin_left = 118.0
-margin_right = 128.0
+[node name="HBoxContainer2" type="HBoxContainer" parent="HBoxContainer"]
+margin_left = 455.0
+margin_right = 569.0
 margin_bottom = 21.0
-rect_min_size = Vector2( 10, 0 )
-mouse_filter = 1
+rect_min_size = Vector2( 50, 0 )
 
-[node name="TextureRect" type="TextureRect" parent="HBoxContainer"]
-margin_left = 132.0
-margin_right = 152.0
+[node name="TextureRect" type="TextureRect" parent="HBoxContainer/HBoxContainer2"]
+margin_right = 20.0
 margin_bottom = 21.0
 rect_min_size = Vector2( 20, 20 )
 texture = ExtResource( 2 )
 expand = true
 stretch_mode = 6
 
-[node name="Status" type="Label" parent="HBoxContainer"]
+[node name="Status" type="Label" parent="HBoxContainer/HBoxContainer2"]
 unique_name_in_owner = true
-margin_left = 156.0
-margin_right = 246.0
+margin_left = 24.0
+margin_right = 114.0
 margin_bottom = 21.0
+rect_min_size = Vector2( 50, 0 )
 mouse_filter = 1
+size_flags_horizontal = 4
 text = "Encrypted"
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="HBoxContainer"]
+margin_left = 880.0
+margin_right = 1024.0
+margin_bottom = 21.0
+rect_min_size = Vector2( 100, 0 )
+size_flags_horizontal = 10
+
+[node name="TextureRect2" type="TextureRect" parent="HBoxContainer/HBoxContainer3"]
+margin_right = 20.0
+margin_bottom = 21.0
+rect_min_size = Vector2( 20, 20 )
+texture = ExtResource( 2 )
+expand = true
+stretch_mode = 6
+
+[node name="State" type="Label" parent="HBoxContainer/HBoxContainer3"]
+unique_name_in_owner = true
+margin_left = 24.0
+margin_right = 144.0
+margin_bottom = 21.0
+rect_min_size = Vector2( 120, 0 )
+mouse_filter = 1
+text = "IDLE-ACTIVE"
 
 [connection signal="gui_input" from="." to="." method="_on_CyberObject_gui_input"]
 [connection signal="mouse_entered" from="." to="." method="_on_CyberObject_mouse_entered"]
