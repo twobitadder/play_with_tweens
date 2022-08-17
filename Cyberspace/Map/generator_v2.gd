@@ -8,6 +8,12 @@ var rooms := {}
 var corridors := {}
 var after_first_pass := false
 var traverse_cost : float setget ,get_traverse_cost
+var is_valid_map := false
+
+###############
+#DEBUG VARIABLE
+###############
+var i := 0
 
 class RoomSorter:
 	static func sort_rooms(a, b) -> bool:
@@ -19,7 +25,10 @@ class RoomSorter:
 
 func _ready() -> void:
 	randomize()
-	generate()
+	while !is_valid_map || i < 10:
+		is_valid_map = true
+		generate()
+		i += 1
 
 func _process(_delta: float) -> void:
 	update()
@@ -28,11 +37,19 @@ func get_traverse_cost() -> float:
 	return WorldState.server.traverse_cost
 
 func generate() -> void:
+#	for child in $Rooms.get_children():
+#		child.queue_free()
+#	yield(get_tree(),"idle_frame")
 	for child in $Rooms.get_children():
-		child.queue_free()
+		child.free()
 	
+	for ice in WorldState.server.ice.keys():
+		ice.destruct()
+		
 	rooms.clear()
 	corridors.clear()
+	WorldState.server.rooms.clear()
+	WorldState.server.ice.clear()
 	after_first_pass = false
 	WorldState.server.placed_heart = false
 	WorldState.server.placed_mind = false
@@ -42,6 +59,10 @@ func generate() -> void:
 	show_neighbors(Vector2.ZERO)
 	WorldState.server.rooms = rooms.duplicate()
 	WorldState.server.ice = invert_room_data().duplicate()
+	print(rooms.size())
+	print(WorldState.server.rooms.size())
+	print(WorldState.server.ice.size())
+	assert(rooms.size() > 0)
 	update()
 
 func place_rooms() -> void:
@@ -152,7 +173,13 @@ func determine_steps(temp_corridors, unconnected_rooms) -> void:
 	
 	processed.clear()
 	
-	while unconnected_rooms.size() > processed.size():
+	var iterator := 0
+	
+	while unconnected_rooms.size() > processed.size() && iterator < 100:
+		iterator += 1
+		if iterator == 100:
+			break
+		
 		for unconnected in unconnected_rooms.keys():
 			var neighbors := [Vector2.UP, Vector2.RIGHT, Vector2.LEFT, Vector2.DOWN]
 			neighbors.shuffle()
@@ -162,6 +189,10 @@ func determine_steps(temp_corridors, unconnected_rooms) -> void:
 					temp_corridors[[unconnected, unconnected + neighbor]] = [rooms[unconnected].position, rooms[unconnected + neighbor].position]
 					rooms[unconnected + neighbor].add_tree_parent(rooms[unconnected])
 					processed.append(unconnected)
+	
+	if iterator >= 100:
+		for room in unconnected_rooms.keys():
+			rooms.erase(room)
 		
 	
 	for corridor in temp_corridors.keys():
@@ -171,6 +202,19 @@ func place_objects() -> void:
 	var placed_ice := 0
 	var placed_data := 0
 	var iterations := 0
+	
+	#if all rooms are data or no rooms are data
+	var ok_data := false
+	var ok_non_data := false
+	for room in rooms.keys():
+		if rooms[room].type == MapRoom.TYPE.DATA:
+			ok_data = true
+		elif rooms[room].type != MapRoom.TYPE.DATA && rooms[room].type != MapRoom.TYPE.ENTRANCE:
+			ok_non_data = true
+	
+	if !ok_data || !ok_non_data:
+		is_valid_map = false
+		return
 	
 	while placed_ice < WorldState.server.num_ice || placed_data < WorldState.server.num_data:
 		var placed := false
@@ -187,6 +231,8 @@ func place_objects() -> void:
 					new_object.grid_position = room
 					placed_data += 1
 					placed = true
+					new_object.i = i
+					new_object.room = rooms[room]
 				_:
 					if placed_ice <= WorldState.server.num_ice:
 						var new_object = object_resource.new()
@@ -195,10 +241,17 @@ func place_objects() -> void:
 						new_object.grid_position = room
 						placed_ice += 1
 						placed = true
+						new_object.i = i
+						new_object.room = rooms[room]
 		if !placed:
 			iterations += 1
 		if iterations >= WorldState.server.max_iterations:
-			generate()
+			is_valid_map = false
+			return
+	
+	WorldState.ice_and_data += placed_ice
+	WorldState.ice_and_data += placed_data
+	WorldState.rooms_instanced += rooms.size()
 
 func get_loc(grid_pos) -> Vector2:
 	return $TileMap.map_to_world(grid_pos)
@@ -216,7 +269,7 @@ func test_move(start_grid, dest_grid) -> bool:
 	
 	return false
 
-func show_neighbors(coord) -> void:	
+func show_neighbors(coord) -> void:
 	for child in rooms[coord].children:
 		child.show()
 	

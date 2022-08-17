@@ -33,6 +33,15 @@ var interaction
 var interacting := false
 var machine : StateMachine
 
+##################
+#DEBUG VARIABLES
+##################
+var i
+var room
+##################
+#END DEBUG VARS
+##################
+
 func create(server_strength : float, _type := -1) -> void:
 	if _type != -1:
 		type = _type
@@ -218,3 +227,9 @@ func interact(action : int) -> void:
 
 func update_state(state_name) -> void:
 	emit_signal("change_state", state_name, Color.white)
+
+func destruct() -> void:
+	pass
+#	machine.disconnect("state_entering", self, "update_state")
+#	machine = null
+#	TimeKeeper.disconnect("pass_time", self, "_on_pass_time")
