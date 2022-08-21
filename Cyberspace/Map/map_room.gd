@@ -32,16 +32,32 @@ func set_type(value) -> void:
 	$Sprite.material.set_shader_param("replace_color", color_coding[type])
 
 func add_tree_parent(parent) -> bool:
-	if parents.has(parent):
-		return false
+	for potential in parents:
+		if potential.get_ref() == parent:
+			return false
 	
-	parents.append(parent)
+	parents.append(weakref(parent))
 	parent.add_tree_child(self)
 	steps = parent.steps + 1
 	return true
 
 func add_tree_child(child) -> void:
-	if children.has(child):
-		return
+	for potential in children:
+		if potential.get_ref() == child:
+			return
 	
-	children.append(child)
+	children.append(weakref(child))
+
+func has_parent(room) -> bool:
+	for potential in parents:
+		if potential.get_ref() == room:
+			return true
+	
+	return false
+
+func has_child(room) -> bool:
+	for potential in children:
+		if potential.get_ref() == room:
+			return true
+	
+	return false

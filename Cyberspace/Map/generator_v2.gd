@@ -4,7 +4,6 @@ var room_template = preload("res://Cyberspace/Map/MapRoom.tscn")
 var object_resource = preload("res://Cyberspace/Objects/Resources/object_data.gd")
 
 var num_rooms : int
-#var rooms := {}
 var corridors := {}
 var after_first_pass := false
 var traverse_cost : float setget ,get_traverse_cost
@@ -15,20 +14,13 @@ var is_valid_map := false
 ###############
 var i := 0
 
-class RoomSorter:
-	static func sort_rooms(a, b) -> bool:
-		if a.steps < b.steps:
-			return true
-		elif a.steps == b.steps && a.type <= b.type:
-			return true
-		return false
-
 func _ready() -> void:
 	randomize()
-	while !is_valid_map || i < 100:
+	while !is_valid_map || i < 1000:
 		is_valid_map = true
 		generate()
 		i += 1
+	print(TimeKeeper.get_signal_connection_list("pass_time").size())
 
 func _process(_delta: float) -> void:
 	update()
@@ -37,15 +29,13 @@ func get_traverse_cost() -> float:
 	return WorldState.server.traverse_cost
 
 func generate() -> void:
-#	for child in $Rooms.get_children():
-#		child.queue_free()
-#	yield(get_tree(),"idle_frame")
 	for child in $Rooms.get_children():
 		child.free()
 	
 	for ice in WorldState.ice.keys():
 		ice.destruct()
-		
+	
+	WorldState.ice.clear()
 	WorldState.rooms.clear()
 	corridors.clear()
 	after_first_pass = false
@@ -257,7 +247,7 @@ func test_move(start_grid, dest_grid) -> bool:
 	var start_room = WorldState.rooms[start_grid]
 	var dest_room = WorldState.rooms[dest_grid]
 	
-	if start_room.children.has(dest_room) || start_room.parents.has(dest_room):
+	if start_room.has_child(dest_room) || start_room.has_parent(dest_room):
 		show_neighbors(dest_grid)
 		return true
 	
@@ -265,10 +255,10 @@ func test_move(start_grid, dest_grid) -> bool:
 
 func show_neighbors(coord) -> void:
 	for child in WorldState.rooms[coord].children:
-		child.show()
+		child.get_ref().show()
 	
 	for parent in WorldState.rooms[coord].parents:
-		parent.show()
+		parent.get_ref().show()
 	
 	var neighbors = [Vector2.UP, Vector2.DOWN, Vector2.RIGHT, Vector2.LEFT]
 	
