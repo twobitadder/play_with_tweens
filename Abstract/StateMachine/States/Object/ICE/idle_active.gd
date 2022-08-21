@@ -8,11 +8,11 @@ func setup(object, machine) -> void:
 
 func process(delta) -> void:
 	scan_check += delta
-	if scan_check >= machine.object.speed:
+	if scan_check >= get_object().speed:
 		scan_check = 0.0
-		if !WorldState.server.ice.has(machine.object):
-			OS.dump_memory_to_file("res://memory_dump.txt")
-			print(machine.object.get_incoming_connections())
-			assert(WorldState.server.ice.has(machine.object))
-		if PlayerInfo.grid_pos == WorldState.server.ice[machine.object]:
+		if !WorldState.ice.has(get_object()):
+			print(get_object().get_incoming_connections())
+			print(WorldState.ice)
+			assert(WorldState.ice.has(get_object()))
+		if PlayerInfo.grid_pos == WorldState.ice[get_object()]:
 			emit_signal("done", "scan")
