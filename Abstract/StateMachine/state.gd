@@ -19,3 +19,6 @@ func exit_state(new_state) -> bool:
 
 func process(delta) -> void:
 	pass
+
+func get_object() -> Resource:
+	return machine.get_object()

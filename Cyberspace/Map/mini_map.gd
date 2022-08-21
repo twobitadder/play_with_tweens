@@ -14,4 +14,4 @@ func update_move(move) -> void:
 	PlayerInfo.grid_pos += move
 	$PlayerMapPos.move($ServerMap.get_loc(PlayerInfo.grid_pos))
 	TimeKeeper.pass_time($ServerMap.traverse_cost)
-	emit_signal("room_entered", $ServerMap.rooms[PlayerInfo.grid_pos].objects)
+	emit_signal("room_entered", WorldState.rooms[PlayerInfo.grid_pos].objects)

@@ -12,7 +12,7 @@ var states := []
 
 func setup(attached_object, base_states : Array) -> void:
 	connect("state_entering", attached_object, "update_state")
-	object = attached_object
+	object = weakref(attached_object)
 	for state in base_states:
 		add_state(state)
 	add_state(idle_state.new())
@@ -45,10 +45,13 @@ func change_state(new_state : String) -> void:
 	
 	emit_signal("state_entering", states.front())
 	state_map[states.front()].enter_state(prev_state)
-	WorldState.report_event("%s has entered state %s" % [object.name, states.front()])
+	WorldState.report_event("%s has entered state %s" % [get_object().name, states.front()])
 
 func has_state(state : String) -> bool:
 	return state_map.has(state)
 
 func reset() -> void:
 	states.clear()
+
+func get_object() -> Resource:
+	return object.get_ref()
