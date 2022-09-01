@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://Abstract/scene_handler.gd" type="Script" id=1]
+
+[node name="SceneHandler" type="Node"]
+script = ExtResource( 1 )
+scenes = {
+"Blank": "res://Cyberspace/UI/Blank.tscn",
+"Cyberspace": "res://Cyberspace/UI/Cyberspace.tscn",
+"Example Scene": "res://path/to/example/scene.tscn"
+}

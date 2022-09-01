@@ -12,7 +12,7 @@ func enter_state(prev_state : String) -> void:
 
 func process(delta : float) -> void:
 	move_timer += delta
-	if PlayerInfo.grid_pos == WorldState.ice[get_object()]:
+	if PlayerInfo.grid_pos == WorldState.server.ice[get_object()]:
 		return
 	
 	if move_timer >= get_object().speed:

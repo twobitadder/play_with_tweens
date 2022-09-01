@@ -24,6 +24,7 @@ func _on_Button_pressed() -> void:
 			child.interact(PlayerInfo.ATTACK_TYPE.SPOOF)
 			child.connect("deselected", self, "_on_object_deselected", [child])
 			TimeKeeper.pass_time(pending_action_time)
+			get_node("oops").visible = false
 			
 
 func _on_Button2_pressed() -> void:

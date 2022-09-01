@@ -11,8 +11,8 @@ export var server_strength := 1.0
 export var traverse_cost := 0.1
 export var num_ice := 10
 export var num_data := 20
-#export var rooms := {}
-#export var ice := {}
+export var ice := {}
+export var rooms := {}
 
 var placed_heart := false
 var placed_mind := false

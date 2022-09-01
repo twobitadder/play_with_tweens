@@ -33,15 +33,6 @@ var interaction
 var interacting := false
 var machine : StateMachine
 
-##################
-#DEBUG VARIABLES
-##################
-var i
-var room
-##################
-#END DEBUG VARS
-##################
-
 func create(server_strength : float, _type := -1) -> void:
 	if _type != -1:
 		type = _type

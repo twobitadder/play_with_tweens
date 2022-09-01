@@ -11,7 +11,7 @@ func process(delta) -> void:
 	query_time += delta
 	if query_time >= get_object().query_time:
 		var next
-		if PlayerInfo.grid_pos == WorldState.ice[get_object()]:
+		if PlayerInfo.grid_pos == WorldState.server.ice[get_object()]:
 			next = "activate"
 		else:
 			next = "hunt"

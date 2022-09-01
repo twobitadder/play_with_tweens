@@ -9,7 +9,7 @@ func setup(object, machine) -> void:
 
 func process(delta : float) -> void:
 	checkup_timer += delta
-	if checkup_timer >= get_object().speed / 2.0 && PlayerInfo.grid_pos != WorldState.ice[get_object()]:
+	if checkup_timer >= get_object().speed / 2.0 && PlayerInfo.grid_pos != WorldState.server.ice[get_object()]:
 		emit_signal("done", "hunt")
 
 func exit_state(new_state : String) -> bool:

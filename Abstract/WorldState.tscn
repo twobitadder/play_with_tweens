@@ -19,6 +19,10 @@ server_strength = 1.0
 traverse_cost = 0.1
 num_ice = 10
 num_data = 20
+ice = {
+}
+rooms = {
+}
 
 [node name="WorldState" type="Node"]
 script = ExtResource( 1 )
