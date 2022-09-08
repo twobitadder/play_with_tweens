@@ -32,6 +32,7 @@ var integrity : float setget set_integrity
 var interaction
 var interacting := false
 var machine : StateMachine
+var category = "base"
 
 func create(server_strength : float, _type := -1) -> void:
 	if _type != -1:
